@@ -5,7 +5,7 @@ This module ties together all implemented algorithms into a unified
 secure-communication pipeline:
 
   SENDER side:
-    1.  DH key exchange → derive shared symmetric key
+    1.  ECDH (P-256) key exchange + KDF → derive shared symmetric key
     2.  Twofish  → encrypt payload (block cipher layer)
     3.  RC4      → encrypt again (stream cipher layer, double encryption)
     4.  ElGamal  → encrypt the Twofish/RC4 key bundle
@@ -27,7 +27,7 @@ import struct
 from crypto.rc4         import RC4
 from crypto.twofish     import SimplifiedTwofish
 from crypto.elgamal     import ElGamal
-from crypto.diffie_hellman import DHParty, DHParameters
+from crypto.ecdh_kdf    import ECDHParty, kdf_derive
 from crypto.md5         import md5_hex, verify_integrity
 
 
@@ -46,16 +46,15 @@ def int_to_bytes(n: int, length: int = None) -> bytes:
 class SecureSession:
     """
     Establishes a secure session between two parties using:
-      • DH key exchange for session key
+      • ECDH (P-256) + KDF for session key
       • Twofish + RC4 for double-layer symmetric encryption
       • ElGamal for asymmetric key wrapping
       • MD5 for integrity checking
     """
 
-    def __init__(self, elgamal_bits: int = 256, dh_bits: int = None):
+    def __init__(self, elgamal_bits: int = 256):
         """
         :param elgamal_bits: Key size for ElGamal (256 for speed in demos, 512+ for security)
-        :param dh_bits: If None, uses RFC 3526 768-bit group
         """
         print("[SecureVault] ══════ Initializing SecureSession ══════")
 
@@ -63,14 +62,8 @@ class SecureSession:
         print("[SecureVault] Generating ElGamal key pair…")
         self.elgamal = ElGamal(bits=elgamal_bits)
 
-        # 2. Set up DH parameters
-        if dh_bits:
-            p, g = DHParameters.generate(dh_bits)
-        else:
-            p, g = DHParameters.from_rfc3526_768()
-
-        self.dh_params = (p, g)
-        print("[SecureVault] DH parameters ready.")
+        # 2. ECDH on secp256r1 — no parameter negotiation needed
+        print("[SecureVault] ECDH on P-256 ready — curve parameters are built-in.")
 
     def sender_encrypt(self, plaintext: bytes, recipient_pub: dict) -> dict:
         """
@@ -80,24 +73,26 @@ class SecureSession:
         :param recipient_pub: Recipient's ElGamal public key dict {p, g, y}
         :return: envelope dict containing all ciphertext components
         """
-        print("\n[SecureVault] ── ENCRYPTING ──────────────────────────────")
+        print("\n[SecureVault] ── ENCRYPTING ─────────────────────────────")
 
-        # ── Step 1: DH key exchange ───────────────────────────────────────────
-        p, g = self.dh_params
-        sender_dh   = DHParty(p, g)
-        receiver_dh = DHParty(p, g)  # In real use: receiver_dh.public_key comes from network
+        # ── Step 1: ECDH + KDF ─────────────────────────────────────────────────────
+        sender_ecdh   = ECDHParty()
+        receiver_ecdh = ECDHParty()  # In real use: receiver sends their public key over the network
 
-        dh_shared_key = sender_dh.derive_key(receiver_dh.public_key, key_len=32)
-        print(f"[Step 1] DH shared key    : {dh_shared_key.hex()}")
+        shared_x = sender_ecdh.shared_x_bytes(receiver_ecdh.public_key)
+        shared_key = kdf_derive(shared_x, key_len=32,
+                                salt=b"SecureVault-ECDH-Salt-v1",
+                                info=b"ecdh-kdf-expand")
+        print(f"[Step 1] ECDH shared key (KDF) : {shared_key.hex()}")
 
-        # ── Step 2: Twofish encryption (inner layer) ──────────────────────────
-        twofish_key = dh_shared_key[:16]  # Use first 16 bytes for Twofish
+        # ── Step 2: Twofish encryption (inner layer) ───────────────────────────
+        twofish_key = shared_key[:16]  # Use first 16 bytes for Twofish
         tf_cipher   = SimplifiedTwofish(twofish_key)
         twofish_ct  = tf_cipher.encrypt(plaintext)
         print(f"[Step 2] Twofish CT       : {twofish_ct[:16].hex()}…")
 
         # ── Step 3: RC4 encryption (outer layer) ──────────────────────────────
-        rc4_key    = dh_shared_key[16:]   # Use last 16 bytes for RC4
+        rc4_key    = shared_key[16:]   # Use last 16 bytes for RC4
         rc4_cipher = RC4(rc4_key)
         rc4_ct     = rc4_cipher.encrypt(twofish_ct)
         print(f"[Step 3] RC4 CT           : {rc4_ct[:16].hex()}…")
@@ -120,13 +115,15 @@ class SecureSession:
 
         # ── Assemble envelope ─────────────────────────────────────────────────
         envelope = {
-            "version": "SecureVault/1.0",
+            "version": "SecureVault/2.0",
             "ciphertext": rc4_ct.hex(),
             "integrity": integrity_tag,
             "elgamal_c1": eg_ct[0],
             "elgamal_c2": eg_ct[1],
-            "dh_sender_pub": sender_dh.public_key,
-            "dh_receiver_pub": receiver_dh.public_key,  # normally sent by receiver
+            "ecdh_sender_pub_x": sender_ecdh.public_key[0],
+            "ecdh_sender_pub_y": sender_ecdh.public_key[1],
+            "ecdh_receiver_pub_x": receiver_ecdh.public_key[0],
+            "ecdh_receiver_pub_y": receiver_ecdh.public_key[1],
             "original_length": len(plaintext),
         }
 

@@ -4,7 +4,8 @@
 ║   Alice  ──── encrypted channel ────  Bob                        ║
 ║                                                                  ║
 ║  Algorithms (all from scratch, no AES/DES/SHA-256):              ║
-║   • Diffie-Hellman   – session key negotiation                   ║
+║   • ECDH (P-256)     – session key negotiation                   ║
+║   • KDF (HKDF-MD5)   – key derivation from shared secret         ║
 ║   • Twofish          – inner block-cipher layer                  ║
 ║   • RC4              – outer stream-cipher layer                 ║
 ║   • ElGamal          – asymmetric key wrapping                   ║
@@ -75,13 +76,13 @@ banner("Loading SecureVault crypto modules…", YELLOW)
 from crypto.rc4            import RC4
 from crypto.twofish        import SimplifiedTwofish
 from crypto.elgamal        import ElGamal
-from crypto.diffie_hellman import DHParty, DHParameters
+from crypto.ecdh_kdf       import ECDHParty, kdf_derive
 from crypto.md5            import md5_hex, verify_integrity
 
 ok("RC4 (stream cipher)         — loaded")
 ok("Twofish (block cipher)      — loaded")
 ok("ElGamal (asymmetric)        — loaded")
-ok("Diffie-Hellman (key exchange)— loaded")
+ok("ECDH P-256 + KDF             — loaded")
 ok("MD5 (integrity hash)        — loaded")
 pause(0.5)
 
@@ -104,12 +105,12 @@ kv("Private key x", bob_eg.private_key["x"])
 ok("ElGamal key pair ready.")
 pause(0.3)
 
-section("Loading Diffie-Hellman parameters (RFC 3526 / 768-bit)", actor="System", color=DIM)
-info("Both Alice and Bob agree on shared public DH parameters (p, g).")
-p_dh, g_dh = DHParameters.from_rfc3526_768()
-kv("DH prime p  (first 40 hex)", hex(p_dh)[:42])
-kv("DH generator g", g_dh)
-ok("DH group parameters agreed upon.")
+section("Using ECDH on secp256r1 (P-256) — no shared parameters needed", actor="System", color=DIM)
+info("ECDH on P-256 uses a fixed, globally-agreed elliptic curve — no parameter negotiation.")
+kv("Curve",     "secp256r1 / NIST P-256")
+kv("Key size",  "256-bit private scalar, 512-bit public point")
+kv("Security",  "~128-bit — equivalent to RSA-3072 or DH-3072")
+ok("P-256 curve parameters are built-in — no setup phase needed.")
 pause(0.3)
 
 
@@ -134,51 +135,53 @@ pause(0.4)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  PHASE 2  — Diffie-Hellman key exchange
+#  PHASE 2  — ECDH (P-256) key exchange + KDF
 # ═══════════════════════════════════════════════════════════════════════════════
-banner("PHASE 2  —  Diffie-Hellman Key Exchange", CYAN)
+banner("PHASE 2  —  ECDH (P-256) Key Exchange + KDF", CYAN)
 pause(0.3)
 
-section("Alice generates her DH keypair", actor="Alice", color=GREEN)
-alice_dh = DHParty(p_dh, g_dh)
-kv("Alice private key (secret!)", hex(alice_dh._private_key)[:40])
-kv("Alice public key  (→ Bob) ", hex(alice_dh.public_key)[:40])
-ok("Alice sends her public key to Bob over the wire.")
+section("Alice generates her ECDH keypair on P-256", actor="Alice", color=GREEN)
+alice_ecdh = ECDHParty()
+kv("Alice private scalar (secret!)", hex(alice_ecdh.private_scalar)[:50])
+kv("Alice public key Qx (→ Bob)  ", hex(alice_ecdh.public_key[0])[:50])
+kv("Alice public key Qy          ", hex(alice_ecdh.public_key[1])[:50])
+ok("Alice sends her public EC point to Bob over the wire.")
 pause(0.3)
 
-section("Bob generates his DH keypair", actor="Bob", color=BLUE)
-bob_dh = DHParty(p_dh, g_dh)
-kv("Bob private key (secret!)", hex(bob_dh._private_key)[:40])
-kv("Bob public key  (→ Alice)", hex(bob_dh.public_key)[:40])
-ok("Bob sends his public key to Alice over the wire.")
+section("Bob generates his ECDH keypair on P-256", actor="Bob", color=BLUE)
+bob_ecdh = ECDHParty()
+kv("Bob private scalar (secret!)  ", hex(bob_ecdh.private_scalar)[:50])
+kv("Bob public key Qx (→ Alice)   ", hex(bob_ecdh.public_key[0])[:50])
+kv("Bob public key Qy             ", hex(bob_ecdh.public_key[1])[:50])
+ok("Bob sends his public EC point to Alice over the wire.")
 pause(0.3)
 
-section("Both compute the SAME shared secret", actor="Alice & Bob", color=YELLOW)
-secret_alice = alice_dh.compute_shared_secret(bob_dh.public_key)
-secret_bob   = bob_dh.compute_shared_secret(alice_dh.public_key)
-kv("Alice computes g^(ab) mod p", hex(secret_alice)[:50])
-kv("Bob   computes g^(ab) mod p", hex(secret_bob)[:50])
+section("Both compute the SAME shared EC point", actor="Alice & Bob", color=YELLOW)
+shared_x_alice = alice_ecdh.shared_x_bytes(bob_ecdh.public_key)
+shared_x_bob   = bob_ecdh.shared_x_bytes(alice_ecdh.public_key)
+kv("Alice computes shared x", shared_x_alice.hex()[:50])
+kv("Bob   computes shared x", shared_x_bob.hex()[:50])
 
-if secret_alice == secret_bob:
-    ok("Shared secrets MATCH — eavesdropper cannot compute this!")
+if shared_x_alice == shared_x_bob:
+    ok("Shared EC point x-coords MATCH — eavesdropper cannot compute scalar·G without private key!")
 else:
     fail("Mismatch — something went wrong.")
 pause(0.3)
 
-section("Deriving symmetric keys from shared secret", actor="Alice", color=GREEN)
-# XOR-fold shared secret → 32-byte key material
-secret_bytes = secret_alice.to_bytes((secret_alice.bit_length() + 7) // 8, 'big')
-key_material = bytearray(32)
-for i, b in enumerate(secret_bytes):
-    key_material[i % 32] ^= b
-key_material = bytes(key_material)
+section("KDF: HKDF-MD5 derive symmetric keys from shared x", actor="Alice", color=GREEN)
+info("HKDF Extract: PRK = HMAC-MD5(salt, shared_x)")
+info("HKDF Expand : OKM = T(1)||T(2)||…  T(i) = HMAC-MD5(PRK, T(i-1)||info||i)")
+key_material = kdf_derive(shared_x_alice, key_len=32,
+                          salt=b"SecureVault-ECDH-Salt-v1",
+                          info=b"ecdh-kdf-expand")
 
 twofish_key = key_material[:16]   # first 16 bytes → Twofish
 rc4_key     = key_material[16:]   # last  16 bytes → RC4
 
+kv("KDF output (32 bytes)", key_material.hex())
 kv("Twofish key (16 bytes)", twofish_key.hex())
 kv("RC4     key (16 bytes)", rc4_key.hex())
-ok("Key material split successfully.")
+ok("Key material derived via HKDF-MD5 — keys are uniformly distributed.")
 pause(0.3)
 
 
@@ -238,19 +241,21 @@ pause(0.3)
 # ── Assemble packet ──────────────────────────────────────────────────────────
 section("Assembling the encrypted packet to transmit", actor="Alice", color=GREEN)
 packet = {
-    "version"       : "SecureVault/1.0",
-    "ciphertext"    : rc4_ct.hex(),
-    "integrity"     : integrity_tag,
-    "elgamal_c1"    : eg_ct[0],
-    "elgamal_c2"    : eg_ct[1],
-    "dh_alice_pub"  : alice_dh.public_key,
-    "dh_bob_pub"    : bob_dh.public_key,
-    "orig_length"   : len(message),
+    "version"          : "SecureVault/2.0",
+    "ciphertext"       : rc4_ct.hex(),
+    "integrity"        : integrity_tag,
+    "elgamal_c1"       : eg_ct[0],
+    "elgamal_c2"       : eg_ct[1],
+    "ecdh_alice_pub_x" : alice_ecdh.public_key[0],
+    "ecdh_alice_pub_y" : alice_ecdh.public_key[1],
+    "ecdh_bob_pub_x"   : bob_ecdh.public_key[0],
+    "ecdh_bob_pub_y"   : bob_ecdh.public_key[1],
+    "orig_length"      : len(message),
 }
 kv("Packet version", packet["version"])
 kv("Ciphertext (first 64 hex)", packet["ciphertext"][:64])
 kv("Integrity tag", packet["integrity"])
-kv("Fields", "ciphertext, integrity, elgamal_c1, elgamal_c2, dh_alice_pub, dh_bob_pub")
+kv("Fields", "ciphertext, integrity, elgamal_c1/c2, ecdh_alice_pub, ecdh_bob_pub")
 print()
 ok("Packet assembled. Alice transmits it to Bob over the network.")
 pause(0.4)
@@ -372,20 +377,21 @@ pause(0.3)
 banner("PHASE 7  —  Simulation Summary", YELLOW)
 
 rows = [
-    ("Algorithm",     "Role",                   "Status"),
-    ("─"*20,          "─"*30,                   "─"*10),
-    ("Diffie-Hellman","Session key exchange",    "✓ PASS"),
-    ("Twofish",       "Inner block encryption",  "✓ PASS"),
-    ("RC4",           "Outer stream encryption", "✓ PASS"),
-    ("ElGamal",       "Asymmetric key wrapping", "✓ PASS"),
-    ("MD5",           "Integrity verification",  "✓ PASS"),
-    ("─"*20,          "─"*30,                   "─"*10),
-    ("Tamper attack", "Eve modifies ciphertext", "✓ DETECTED"),
+    ("Algorithm",        "Role",                          "Status"),
+    ("─"*22,             "─"*32,                          "─"*10),
+    ("ECDH (P-256)",     "Session key exchange",           "✓ PASS"),
+    ("KDF (HKDF-MD5)",   "Key derivation from shared pt",  "✓ PASS"),
+    ("Twofish",          "Inner block encryption",         "✓ PASS"),
+    ("RC4",              "Outer stream encryption",        "✓ PASS"),
+    ("ElGamal",          "Asymmetric key wrapping",        "✓ PASS"),
+    ("MD5",              "Integrity verification",         "✓ PASS"),
+    ("─"*22,             "─"*32,                          "─"*10),
+    ("Tamper attack",    "Eve modifies ciphertext",        "✓ DETECTED"),
 ]
 
 for algo, role, status in rows:
     color = GREEN if "PASS" in status or "DETECTED" in status else WHITE
-    print(f"    {CYAN}{algo:<22}{RESET}  {DIM}{role:<32}{RESET}  {color}{status}{RESET}")
+    print(f"    {CYAN}{algo:<24}{RESET}  {DIM}{role:<34}{RESET}  {color}{status}{RESET}")
 
 print(f"\n  {bold('All algorithms implemented from scratch — zero crypto libraries used.')}")
 print(f"  {DIM}(No AES, No DES, No SHA-256){RESET}")
