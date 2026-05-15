@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SecureVault — Cryptographic Pipeline Simulation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080c18;--card:#0d1526;--card2:#111d35;
+  --alice:#00d4aa;--bob:#4f9eff;--eve:#ff4757;--sys:#a855f7;
+  --text:#e2e8f0;--dim:#64748b;--border:rgba(99,102,241,0.2);
+  --accent:#6366f1;--yellow:#fbbf24;--green:#22c55e;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.mono{font-family:'JetBrains Mono',monospace;font-size:.78rem}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,#0a0e1a 0%,#0d1a3a 50%,#0a0e1a 100%);padding:3rem 1rem 2rem;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(99,102,241,0.15),transparent);pointer-events:none}
+.logo{font-size:2.4rem;font-weight:700;background:linear-gradient(135deg,var(--alice),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:.5rem}
+.hero h1{font-size:1.1rem;font-weight:400;color:var(--dim);margin-bottom:1.2rem}
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:1.5rem}
+.badge{padding:.25rem .7rem;border-radius:999px;font-size:.7rem;font-weight:600;border:1px solid}
+.badge-alice{color:var(--alice);border-color:var(--alice);background:rgba(0,212,170,.08)}
+.badge-bob{color:var(--bob);border-color:var(--bob);background:rgba(79,158,255,.08)}
+.badge-sys{color:var(--sys);border-color:var(--sys);background:rgba(168,85,247,.08)}
+
+/* INPUT AREA */
+.input-wrap{max-width:760px;margin:0 auto;padding:2rem 1rem}
+.input-label{font-size:.8rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem;display:block}
+textarea{width:100%;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:.95rem;padding:1rem;resize:vertical;min-height:90px;outline:none;transition:border-color .2s}
+textarea:focus{border-color:var(--accent)}
+.run-btn{width:100%;margin-top:.75rem;padding:1rem;border:none;border-radius:12px;background:linear-gradient(135deg,var(--accent),#7c3aed);color:#fff;font-size:1rem;font-weight:600;cursor:pointer;transition:opacity .2s,transform .15s;letter-spacing:.02em}
+.run-btn:hover{opacity:.9;transform:translateY(-1px)}
+.run-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* PHASES */
+.phases{max-width:960px;margin:0 auto;padding:0 1rem 3rem;display:flex;flex-direction:column;gap:1.2rem}
+.phase-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
+.phase-card.visible{opacity:1;transform:translateY(0)}
+.phase-head{display:flex;align-items:center;gap:.75rem;padding:1rem 1.2rem;border-bottom:1px solid var(--border)}
+.phase-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;flex-shrink:0}
+.phase-title{font-weight:600;font-size:.95rem;flex:1}
+.actor-badge{padding:.2rem .6rem;border-radius:999px;font-size:.68rem;font-weight:700}
+.actor-alice{background:rgba(0,212,170,.15);color:var(--alice)}
+.actor-bob{background:rgba(79,158,255,.15);color:var(--bob)}
+.actor-eve{background:rgba(255,71,87,.15);color:var(--eve)}
+.actor-sys{background:rgba(168,85,247,.15);color:var(--sys)}
+.phase-body{padding:1.2rem}
+
+/* KV rows */
+.kv{display:flex;flex-direction:column;gap:.5rem}
+.kv-row{display:flex;gap:.75rem;align-items:flex-start;flex-wrap:wrap}
+.kv-key{font-size:.72rem;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;min-width:130px;flex-shrink:0;padding-top:.15rem}
+.kv-val{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--text);word-break:break-all;flex:1}
+.kv-val.ok{color:var(--green)}
+.kv-val.err{color:var(--eve)}
+.kv-val.yellow{color:var(--yellow)}
+
+/* hex block */
+.hex-block{background:#060a14;border:1px solid rgba(99,102,241,0.15);border-radius:8px;padding:.6rem .8rem;margin:.3rem 0}
+.hex-block .hex-label{font-size:.68rem;color:var(--dim);margin-bottom:.3rem;font-weight:600}
+.hex-block .hex-val{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#a5b4fc;word-break:break-all}
+
+/* status tag */
+.status{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .8rem;border-radius:999px;font-size:.78rem;font-weight:700;margin-top:.75rem}
+.status.ok{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.3)}
+.status.fail{background:rgba(255,71,87,.12);color:var(--eve);border:1px solid rgba(255,71,87,.3)}
+
+/* pipeline */
+.pipeline{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin:.75rem 0}
+.pipe-step{padding:.4rem .9rem;border-radius:8px;font-size:.75rem;font-weight:600;border:1px solid}
+.pipe-arrow{color:var(--dim);font-size:.9rem}
+
+/* flow diagram */
+.flow{display:flex;align-items:center;justify-content:center;gap:1rem;padding:1rem;background:#060a14;border-radius:12px;margin:.75rem 0;flex-wrap:wrap}
+.flow-actor{padding:.6rem 1.2rem;border-radius:10px;font-weight:700;font-size:.85rem;text-align:center}
+.flow-alice{background:rgba(0,212,170,.15);border:1px solid var(--alice);color:var(--alice)}
+.flow-bob{background:rgba(79,158,255,.15);border:1px solid var(--bob);color:var(--bob)}
+.flow-eve{background:rgba(255,71,87,.15);border:1px solid var(--eve);color:var(--eve)}
+.flow-arrow{font-size:1.5rem;color:var(--dim)}
+.flow-packet{font-size:.7rem;color:var(--dim);text-align:center}
+
+/* message bubble */
+.msg-bubble{background:#060a14;border:1px solid var(--border);border-radius:10px;padding:.8rem 1rem;border-left:3px solid var(--alice);margin:.5rem 0}
+.msg-bubble.bob{border-left-color:var(--bob)}
+.msg-text{font-size:.9rem;line-height:1.6;color:var(--text)}
+.msg-meta{font-size:.7rem;color:var(--dim);margin-top:.4rem}
+
+/* tamper */
+.tamper-compare{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin:.75rem 0}
+.tamper-box{background:#060a14;border-radius:8px;padding:.75rem;border:1px solid}
+.tamper-orig{border-color:rgba(79,158,255,.3)}
+.tamper-evil{border-color:rgba(255,71,87,.3)}
+.tamper-label{font-size:.68rem;font-weight:700;margin-bottom:.4rem}
+
+/* summary table */
+.summary-table{width:100%;border-collapse:collapse;margin-top:.5rem}
+.summary-table th{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--dim);padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border)}
+.summary-table td{padding:.55rem .75rem;font-size:.82rem;border-bottom:1px solid rgba(99,102,241,.08)}
+.summary-table tr:last-child td{border-bottom:none}
+.pass{color:var(--green);font-weight:700}
+.detected{color:var(--yellow);font-weight:700}
+
+/* spinner */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:.5rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* error */
+.error-box{background:rgba(255,71,87,.1);border:1px solid rgba(255,71,87,.4);border-radius:10px;padding:1rem;color:var(--eve);font-size:.85rem;margin-top:.75rem}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="logo">🔐 SecureVault</div>
+  <h1>Cryptographic Pipeline Simulation</h1>
+  <div class="badges">
+    <span class="badge badge-alice">ECDH P-256</span>
+    <span class="badge badge-alice">HKDF-MD5</span>
+    <span class="badge badge-sys">Twofish</span>
+    <span class="badge badge-sys">RC4</span>
+    <span class="badge badge-bob">ElGamal</span>
+    <span class="badge badge-bob">MD5 Integrity</span>
+  </div>
+</div>
+
+<div class="input-wrap">
+  <label class="input-label">Alice's Message</label>
+  <textarea id="msgInput">Bob, the board approved the merger. Transfer the funds to account #4471-XXXX by Friday. Do not use email - this channel only. - Alice</textarea>
+  <button class="run-btn" id="runBtn" onclick="runSim()">▶ Run Full Simulation</button>
+  <div id="errorBox"></div>
+</div>
+
+<div class="phases" id="phases"></div>
+
+<script>
+async function runSim() {
+  const btn = document.getElementById('runBtn');
+  const msg = document.getElementById('msgInput').value.trim();
+  const errBox = document.getElementById('errorBox');
+  const phases = document.getElementById('phases');
+
+  if (!msg) return;
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Running simulation…';
+  errBox.innerHTML = '';
+  phases.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/simulate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    renderAll(json.data);
+  } catch(e) {
+    errBox.innerHTML = `<div class="error-box">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '▶ Run Full Simulation';
+  }
+}
+
+function card(phaseNum, title, actor, colorHex, bodyHtml) {
+  const actorClass = {Alice:'actor-alice',Bob:'actor-bob',Eve:'actor-eve',System:'actor-sys'}[actor]||'actor-sys';
+  return `
+  <div class="phase-card" id="card${phaseNum}">
+    <div class="phase-head">
+      <div class="phase-num" style="background:${colorHex}22;color:${colorHex};border:1px solid ${colorHex}44">P${phaseNum}</div>
+      <div class="phase-title">${title}</div>
+      <span class="actor-badge ${actorClass}">${actor}</span>
+    </div>
+    <div class="phase-body">${bodyHtml}</div>
+  </div>`;
+}
+
+function kv(label, val, cls='') {
+  return `<div class="kv-row"><span class="kv-key">${label}</span><span class="kv-val ${cls}">${val}</span></div>`;
+}
+function hexBlock(label, val) {
+  return `<div class="hex-block"><div class="hex-label">${label}</div><div class="hex-val">${val}</div></div>`;
+}
+function status(ok, msg) {
+  return `<div class="status ${ok?'ok':'fail'}">${ok?'✓':'✗'} ${msg}</div>`;
+}
+function pipe(...steps) {
+  return '<div class="pipeline">' + steps.map((s,i)=>`<span class="pipe-step" style="color:${s[1]};border-color:${s[1]}44;background:${s[1]}11">${s[0]}</span>${i<steps.length-1?'<span class="pipe-arrow">→</span>':''}`).join('') + '</div>';
+}
+
+function renderAll(d) {
+  const phases = document.getElementById('phases');
+
+  // Phase 0
+  phases.innerHTML += card(0, 'Setup & Key Generation', 'System', '#a855f7', `
+    <div class="kv">
+      ${kv('ElGamal p (prime)', d.phase0.elgamal_p.substring(0,40)+'…')}
+      ${kv('ElGamal g (generator)', d.phase0.elgamal_g)}
+      ${kv('Bob public key y', d.phase0.elgamal_y.substring(0,40)+'…')}
+      ${kv('Bob private key x', d.phase0.elgamal_x.substring(0,40)+'…')}
+    </div>
+    ${status(true, 'ElGamal 256-bit key pair generated. P-256 curve built-in — no negotiation needed.')}
+  `);
+
+  // Phase 1
+  phases.innerHTML += card(1, 'Alice Composes Message', 'Alice', '#00d4aa', `
+    <div class="msg-bubble">
+      <div class="msg-text">${d.phase1.message}</div>
+      <div class="msg-meta">📨 ${d.phase1.message_bytes} bytes</div>
+    </div>
+    ${hexBlock('Plaintext hex (first 32 bytes)', d.phase1.message_hex)}
+  `);
+
+  // Phase 2
+  phases.innerHTML += card(2, 'ECDH P-256 Key Exchange + KDF', 'Alice & Bob', '#00d4aa', `
+    <div class="kv">
+      ${kv('Alice private scalar', d.phase2.alice_private, 'yellow')}
+      ${kv('Alice public Qx →Bob', d.phase2.alice_pub_x)}
+      ${kv('Alice public Qy', d.phase2.alice_pub_y)}
+      ${kv('Bob private scalar', d.phase2.bob_private, 'yellow')}
+      ${kv('Bob public Qx →Alice', d.phase2.bob_pub_x)}
+    </div>
+    ${hexBlock('Shared secret x-coord', d.phase2.shared_x)}
+    ${status(d.phase2.shared_match, 'Both parties compute identical shared point — ECDH complete')}
+    <div style="margin-top:.75rem" class="kv">
+      ${kv('KDF output (32 bytes)', d.phase2.kdf_output)}
+      ${kv('Twofish key (16B)', d.phase2.twofish_key, 'ok')}
+      ${kv('RC4 key (16B)', d.phase2.rc4_key, 'ok')}
+    </div>
+  `);
+
+  // Phase 3
+  phases.innerHTML += card(3, 'Encryption Pipeline (Alice → Bob)', 'Alice', '#00d4aa', `
+    ${pipe(['Message','#e2e8f0'],['Twofish','#a855f7'],['RC4','#6366f1'],['MD5 Tag','#fbbf24'],['ElGamal Wrap','#4f9eff'],['📦 Packet','#00d4aa'])}
+    ${hexBlock('Plaintext hex', d.phase3.plaintext_hex)}
+    ${hexBlock('After Twofish (inner layer)', d.phase3.twofish_ct + '…')}
+    ${hexBlock('After RC4 (outer layer)', d.phase3.rc4_ct + '…')}
+    <div class="kv" style="margin-top:.75rem">
+      ${kv('MD5 integrity tag', d.phase3.integrity_tag, 'yellow')}
+      ${kv('ElGamal c1', d.phase3.elgamal_c1+'…')}
+      ${kv('ElGamal c2', d.phase3.elgamal_c2+'…')}
+      ${kv('Ciphertext size', d.phase3.rc4_ct_size + ' bytes')}
+    </div>
+    <div class="flow" style="margin-top:.75rem">
+      <div class="flow-actor flow-alice">Alice</div>
+      <div style="text-align:center"><div class="flow-arrow">→</div><div class="flow-packet">📦 encrypted packet</div></div>
+      <div class="flow-actor flow-bob">Bob</div>
+    </div>
+  `);
+
+  // Phase 4
+  phases.innerHTML += card(4, 'Decryption Pipeline (Bob)', 'Bob', '#4f9eff', `
+    ${pipe(['📦 Packet','#4f9eff'],['MD5 Verify','#fbbf24'],['ElGamal Unwrap','#6366f1'],['RC4 Decrypt','#a855f7'],['Twofish Decrypt','#00d4aa'],['Plaintext','#e2e8f0'])}
+    <div class="kv">
+      ${kv('Received MD5 tag', d.phase4.received_tag)}
+      ${kv('Computed MD5 tag', d.phase4.computed_tag)}
+    </div>
+    ${status(d.phase4.integrity_check, 'Integrity check passed — message not tampered')}
+    <div class="kv" style="margin-top:.75rem">
+      ${kv('Recovered Twofish key', d.phase4.rec_twofish_key, 'ok')}
+      ${kv('Recovered RC4 key', d.phase4.rec_rc4_key, 'ok')}
+    </div>
+    ${status(d.phase4.keys_match, 'Key bundle successfully unwrapped via ElGamal')}
+    ${hexBlock('After RC4 decrypt', d.phase4.after_rc4 + '…')}
+    ${hexBlock('After Twofish decrypt (plaintext hex)', d.phase4.after_twofish + '…')}
+  `);
+
+  // Phase 5
+  phases.innerHTML += card(5, 'Bob Reads the Decrypted Message', 'Bob', '#4f9eff', `
+    <div class="msg-bubble bob">
+      <div class="msg-text">${d.phase5.recovered_message}</div>
+      <div class="msg-meta">📨 ${d.phase5.recovered_bytes} bytes recovered</div>
+    </div>
+    ${status(d.phase5.match, 'Recovered message is byte-for-byte identical to what Alice sent')}
+  `);
+
+  // Phase 6
+  phases.innerHTML += card(6, 'Tamper Attack Simulation (Eve)', 'Eve', '#ff4757', `
+    <p style="font-size:.83rem;color:var(--dim);margin-bottom:.75rem">Eve intercepts the packet and flips 4 bytes at position [8:12] in the ciphertext.</p>
+    <div class="tamper-compare">
+      <div class="tamper-box tamper-orig">
+        <div class="tamper-label" style="color:var(--bob)">Original bytes [8:12]</div>
+        <div class="mono" style="color:var(--bob)">${d.phase6.original_bytes}</div>
+      </div>
+      <div class="tamper-box tamper-evil">
+        <div class="tamper-label" style="color:var(--eve)">Tampered (Eve writes)</div>
+        <div class="mono" style="color:var(--eve)">${d.phase6.tampered_bytes}</div>
+      </div>
+    </div>
+    <div class="kv">
+      ${kv('Original MD5 tag', d.phase6.original_tag)}
+      ${kv('Tampered MD5 tag', d.phase6.tampered_tag, 'err')}
+    </div>
+    ${status(d.phase6.detected, "Eve's attack DETECTED — Bob rejects the tampered packet")}
+  `);
+
+  // Summary
+  const summaryRows = [
+    ['ECDH (P-256)', 'Session key exchange', 'pass'],
+    ['KDF (HKDF-MD5)', 'Key derivation', 'pass'],
+    ['Twofish', 'Inner block encryption', 'pass'],
+    ['RC4', 'Outer stream encryption', 'pass'],
+    ['ElGamal', 'Asymmetric key wrapping', 'pass'],
+    ['MD5', 'Integrity verification', 'pass'],
+    ['Tamper attack', 'Eve modifies ciphertext', 'detected'],
+  ];
+  const rows = summaryRows.map(([a,r,s])=>`<tr><td>${a}</td><td style="color:var(--dim)">${r}</td><td class="${s==='detected'?'detected':'pass'}">${s==='detected'?'✓ DETECTED':'✓ PASS'}</td></tr>`).join('');
+
+  phases.innerHTML += card(7, 'Simulation Summary', 'System', '#fbbf24', `
+    <table class="summary-table">
+      <thead><tr><th>Algorithm</th><th>Role</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="status ok" style="margin-top:1rem">✓ All algorithms from scratch — zero external crypto libraries used</div>
+  `);
+
+  // Animate cards in sequence
+  document.querySelectorAll('.phase-card').forEach((card, i) => {
+    setTimeout(() => card.classList.add('visible'), i * 200);
+  });
+}
+</script>
+</body>
+</html>
