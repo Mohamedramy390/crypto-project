@@ -1,7 +1,6 @@
 # 🔐 SecureVault — Cryptographic Pipeline
 
-A full cryptographic communication system built **from scratch** using custom implementations of symmetric and asymmetric algorithms — no AES, DES, or SHA-256 used.
-
+A full cryptographic communication system built **from scratch**.
 ---
 
 ## 👥 Team Members
