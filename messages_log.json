@@ -1,0 +1,517 @@
+[
+  {
+    "timestamp": "2026-05-20T07:04:04.825258+00:00",
+    "original_message": "Bob, the board approved the merger. Transfer the funds to account #4471-XXXX by Friday. Do not use email - this channel only. - Alice",
+    "encryption": {
+      "twofish_ciphertext": "09f2d4a86f83821f7e1301ed2e433b4eba1076654df25ec5b0e919e6e29316f8",
+      "rc4_ciphertext": "b365ba19c72dd4b67aa9016f6c8bf85881754da6beccfedde5016ec5e2ec1685",
+      "full_ciphertext_hex": "b365ba19c72dd4b67aa9016f6c8bf85881754da6beccfedde5016ec5e2ec168524a5475de77d89a9988af0328b2a3cc68f8cd23d6853638acc241b19e43c996e",
+      "integrity_tag": "d8afcbe8da91e868d57ef8adde61f012",
+      "elgamal_c1": "3273379473868825384239847193085859269873031280847115216922582984",
+      "elgamal_c2": "7392634511768939598867103668357758128469577620462158073027552112"
+    },
+    "decryption_ok": false,
+    "recovered_message": "�uo�\u001b˒3I��SE`~ ��\u0014�\u0002��Y^���iѳ\u0013�]�E0�}˒�\u0010\u0018$����_�\u0013U�\u0014�ܹ)�%\u0007*n*�?i��̘��\u0016�z�`��9�#s��\r�F��*�i��\f�\"��ʪ�/�]\u0007>\u0007|�)Z���",
+    "tamper_detected": true
+  },
+  {
+    "timestamp": "2026-05-20T07:04:44.392248+00:00",
+    "original_message": "hello",
+    "encryption": {
+      "twofish_ciphertext": "de4f55ccd1c690aa7d82147d6da3cd96",
+      "rc4_ciphertext": "6bb1e376bcf6d073e9d6d6744fa86bb1",
+      "full_ciphertext_hex": "6bb1e376bcf6d073e9d6d6744fa86bb1",
+      "integrity_tag": "6280efa5bbdb69dcd8149c45ba651261",
+      "elgamal_c1": "1946501949877776224638151011752930369140732009341995993646830093",
+      "elgamal_c2": "7517791202786399011334768138471543527631106728901552798653588823"
+    },
+    "decryption_ok": true,
+    "recovered_message": "hello",
+    "tamper_detected": true
+  },
+  {
+    "timestamp": "2026-05-20T07:05:05.556206+00:00",
+    "original_message": "lkadkgfdhskhfkdshf",
+    "encryption": {
+      "twofish_ciphertext": "c747135e1f249d38412a79106474af4288bcf5d41aee69664c2db2bef02f4b41",
+      "rc4_ciphertext": "2e144d8f3e42b56a26c7fe9f79681ac96529127f570c1992282964bc608bad2c",
+      "full_ciphertext_hex": "2e144d8f3e42b56a26c7fe9f79681ac96529127f570c1992282964bc608bad2c",
+      "integrity_tag": "5be517b51ea3bb63d0b93ce7bed0a00d",
+      "elgamal_c1": "3350706980247648986358781109184018952035445254574261116324593739",
+      "elgamal_c2": "5473639928545316576815039793409807965923906181524542100177055233"
+    },
+    "decryption_ok": true,
+    "recovered_message": "lkadkgfdhskhfkdshf",
+    "tamper_detected": true
+  },
+  {
+    "timestamp": "2026-05-20T07:05:28.322755+00:00",
+    "original_message": "Bob, the board approved the merger. Transfer the funds to account #4471-XXXX by Friday. Do not use email - this channel only. - Alice",
+    "encryption": {
+      "twofish_ciphertext": "30924a8638e8ef391281849eafe82d892686aca702f16bee347861734ca9dc66",
+      "rc4_ciphertext": "7b92f4579de0adbe624839593f107cc44614440c542b36beb62319af59f44b45",
+      "full_ciphertext_hex": "7b92f4579de0adbe624839593f107cc44614440c542b36beb62319af59f44b457209449884fc17e853da418c626b9e06f37e84398c20382d26dfaeb5da13dcf8",
+      "integrity_tag": "7849e54a205b63af96d4a86fa82f3437",
+      "elgamal_c1": "5091472875663195057016872468194006599793819295475174818634530723",
+      "elgamal_c2": "4245692257760977744495938347499307730564977498256577046362072433"
+    },
+    "decryption_ok": true,
+    "recovered_message": "Bob, the board approved the merger. Transfer the funds to account #4471-XXXX by Friday. Do not use email - this channel only. - Alice",
+    "tamper_detected": true
+  },
+  {
+    "timestamp": "2026-05-20T07:06:59.580342+00:00",
+    "original_message": "warshana",
+    "encryption": {
+      "twofish_ciphertext": "34ac0dbe6b85f6eb942b185875a9329d",
+      "rc4_ciphertext": "392e3ee024428ee639524631a3e0c381",
+      "full_ciphertext_hex": "392e3ee024428ee639524631a3e0c381",
+      "integrity_tag": "9d690b02685cee03d0411684d8e8d5bc",
+      "elgamal_c1": "9897663252388302157904687211363859190957749300755431354336119897",
+      "elgamal_c2": "9101207545852013501496140462474004586545227621486768061947268215"
+    },
+    "before_decryption": {
+      "received_ciphertext_hex": "392e3ee024428ee639524631a3e0c381",
+      "received_integrity_tag": "9d690b02685cee03d0411684d8e8d5bc",
+      "integrity_verified": true
+    },
+    "after_decryption": {
+      "recovered_message": "warshana",
+      "recovered_bytes": 8,
+      "match_original": true
+    },
+    "tamper_detected": true
+  },
+  {
+    "timestamp": "2026-05-20T07:43:30.692321+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "794d13556d005b777e09b0840b05d4e5",
+      "integrity_tag": "4d9bf7e89d430dfaccee15198c678e3c"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T07:43:30.695813+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "794d13556d005b777e09b0840b05d4e5",
+      "integrity_tag": "4d9bf7e89d430dfaccee15198c678e3c"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T07:44:03.224139+00:00",
+    "direction": "client → server",
+    "original_message": "bye",
+    "before_decryption": {
+      "ciphertext_hex": "912d96c206bd39344b3042535062c4da",
+      "integrity_tag": "7d97081b2d37c22683e7f821814bd757"
+    },
+    "after_decryption": {
+      "recovered_message": "bye"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T07:44:03.234522+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "bye",
+    "before_decryption": {
+      "ciphertext_hex": "912d96c206bd39344b3042535062c4da",
+      "integrity_tag": "7d97081b2d37c22683e7f821814bd757"
+    },
+    "after_decryption": {
+      "recovered_message": "bye"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T08:31:40.449221+00:00",
+    "direction": "client → server",
+    "original_message": "hhh",
+    "before_decryption": {
+      "ciphertext_hex": "e24dd13a3fd334b258738d81d2f03e57",
+      "integrity_tag": "09c38dd1fd12c6b90b94777afcbfbc4b"
+    },
+    "after_decryption": {
+      "recovered_message": "hhh"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T08:31:40.451861+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hhh",
+    "before_decryption": {
+      "ciphertext_hex": "e24dd13a3fd334b258738d81d2f03e57",
+      "integrity_tag": "09c38dd1fd12c6b90b94777afcbfbc4b"
+    },
+    "after_decryption": {
+      "recovered_message": "hhh"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:11.109050+00:00",
+    "direction": "client → server",
+    "original_message": "jj",
+    "before_decryption": {
+      "ciphertext_hex": "3349e87f8ead80636bc53c29d2410082",
+      "integrity_tag": "e65bdb54776a6e3e38c6a3bf7be3f58c"
+    },
+    "after_decryption": {
+      "recovered_message": "jj"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:11.114903+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "",
+    "before_decryption": {
+      "ciphertext_hex": "3349e87f8ead80636bc53c29d2410082",
+      "integrity_tag": "e65bdb54776a6e3e38c6a3bf7be3f58c"
+    },
+    "after_decryption": {
+      "recovered_message": ""
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:23.338037+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "ea46c6b0fae00e49beb414fad1c90106",
+      "integrity_tag": "2ac77227eb9d1163dc2583645fe4c6cf"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:23.340008+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "��z",
+    "before_decryption": {
+      "ciphertext_hex": "ea46c6b0fae00e49beb414fad1c90106",
+      "integrity_tag": "2ac77227eb9d1163dc2583645fe4c6cf"
+    },
+    "after_decryption": {
+      "recovered_message": "��z"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:37.226729+00:00",
+    "direction": "client → server",
+    "original_message": "hekk",
+    "before_decryption": {
+      "ciphertext_hex": "de2a94710bbd76e143536cd2870ab9d7",
+      "integrity_tag": "712918e1087288272c0631ea2f6717e4"
+    },
+    "after_decryption": {
+      "recovered_message": "hekk"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:39:37.231705+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "��3\u0019��ma����T",
+    "before_decryption": {
+      "ciphertext_hex": "de2a94710bbd76e143536cd2870ab9d7",
+      "integrity_tag": "712918e1087288272c0631ea2f6717e4"
+    },
+    "after_decryption": {
+      "recovered_message": "��3\u0019��ma����T"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:40:09.665855+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "ea46c6b0fae00e49beb414fad1c90106",
+      "integrity_tag": "2ac77227eb9d1163dc2583645fe4c6cf"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:40:20.342242+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "b0ebfb4ae2a7cdbecf0471fb54e72e33",
+      "integrity_tag": "d1d772127e853127665d14a616890bbd"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:40:20.348758+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "b0ebfb4ae2a7cdbecf0471fb54e72e33",
+      "integrity_tag": "d1d772127e853127665d14a616890bbd"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:40:29.928213+00:00",
+    "direction": "client → server",
+    "original_message": "hi",
+    "before_decryption": {
+      "ciphertext_hex": "e6635b105ff9968ed1b014e559b6e454",
+      "integrity_tag": "e5f4875b7021d5a4ce8f0b7d5dfb7318"
+    },
+    "after_decryption": {
+      "recovered_message": "hi"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T09:40:29.934382+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hi",
+    "before_decryption": {
+      "ciphertext_hex": "e6635b105ff9968ed1b014e559b6e454",
+      "integrity_tag": "e5f4875b7021d5a4ce8f0b7d5dfb7318"
+    },
+    "after_decryption": {
+      "recovered_message": "hi"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:08:07.175100+00:00",
+    "direction": "client → server",
+    "original_message": "kk",
+    "before_decryption": {
+      "ciphertext_hex": "83633fd27c64f1cb0db324bfca6666a5",
+      "integrity_tag": "f00ab212afb1b48962b4ab16849652e2"
+    },
+    "after_decryption": {
+      "recovered_message": "kk"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:08:07.177776+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "kk",
+    "before_decryption": {
+      "ciphertext_hex": "83633fd27c64f1cb0db324bfca6666a5",
+      "integrity_tag": "f00ab212afb1b48962b4ab16849652e2"
+    },
+    "after_decryption": {
+      "recovered_message": "kk"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:35:49.992316+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "3d59c4e52a6a572aeef866233091424c",
+      "integrity_tag": "72b0a6a13795cecbaee0443aecdbf4ed"
+    },
+    "after_decryption": {
+      "recovered_message": ""
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:38:34.122680+00:00",
+    "direction": "client → server",
+    "original_message": "kkkkkkkkkkkkkkkkkkk",
+    "before_decryption": {
+      "ciphertext_hex": "3af01acd2938c47efb7219366e1f7cdea708368620639645d6ab94cdba885b9c",
+      "integrity_tag": "8302ccc54a58527ead45710f4d11efbe"
+    },
+    "after_decryption": {
+      "recovered_message": ""
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:38:54.392855+00:00",
+    "direction": "client → server",
+    "original_message": "dsjkgfdsaj",
+    "before_decryption": {
+      "ciphertext_hex": "1afa665a42cdcb283a9c514eca713085",
+      "integrity_tag": "7a97ffa888ddcae754d6724613f95fb6"
+    },
+    "after_decryption": {
+      "recovered_message": "dsjkgfdsaj"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T10:44:56.046445+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "6824d1bc6b820f9d89104d9bd529e258",
+      "integrity_tag": "991bbf9f3342a5e8ff277789317611a0"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T12:01:25.277719+00:00",
+    "direction": "client → server",
+    "original_message": "heelo",
+    "before_decryption": {
+      "ciphertext_hex": "ce0efaebe55467b701da5073c5e90879",
+      "integrity_tag": "455306753e860d30a00c75f8f69025f6"
+    },
+    "after_decryption": {
+      "recovered_message": "heelo"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T12:02:28.438834+00:00",
+    "direction": "client → server",
+    "original_message": "ll",
+    "before_decryption": {
+      "ciphertext_hex": "dc53235b9c0695010377c74685ae7c1e",
+      "integrity_tag": "78dd16d9b4852b1c016aecb9c61c93fd"
+    },
+    "after_decryption": {
+      "recovered_message": "ll"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T12:02:37.162292+00:00",
+    "direction": "client → server",
+    "original_message": "ll",
+    "before_decryption": {
+      "ciphertext_hex": "66604fe7818c2fa7b73e2eea738ebb39",
+      "integrity_tag": "5275b9bf8908b5cb122c089a62075143"
+    },
+    "after_decryption": {
+      "recovered_message": "ll"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T12:02:37.164796+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "ll",
+    "before_decryption": {
+      "ciphertext_hex": "66604fe7818c2fa7b73e2eea738ebb39",
+      "integrity_tag": "5275b9bf8908b5cb122c089a62075143"
+    },
+    "after_decryption": {
+      "recovered_message": "ll"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T12:58:30.289585+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "9da6bf1e8aba6bd6802bb330b2bea050",
+      "integrity_tag": "8b6899c37377e9fd1e6fa8a400c083b9"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:12:08.122666+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "ca6b1f502cdace89ab9a55a52b2929ca",
+      "integrity_tag": "d0fd2fd44cc93fd8dd7063eef80cbd3c"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:12:55.125954+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "e169c3e553f4f15644eafdc040f94108",
+      "integrity_tag": "e226d424f74024f6f9c0b6466be4fee5"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:13:26.045451+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "9da6bf1e8aba6bd6802bb330b2bea050",
+      "integrity_tag": "8b6899c37377e9fd1e6fa8a400c083b9"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:13:26.048083+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "9da6bf1e8aba6bd6802bb330b2bea050",
+      "integrity_tag": "8b6899c37377e9fd1e6fa8a400c083b9"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:22:51.930327+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "fa84fece9002e87db582efab9862e451",
+      "integrity_tag": "2dcc504535c56aac6ec94939a333d0d3"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:23:20.392834+00:00",
+    "direction": "client → server",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "9da6bf1e8aba6bd6802bb330b2bea050",
+      "integrity_tag": "8b6899c37377e9fd1e6fa8a400c083b9"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  },
+  {
+    "timestamp": "2026-05-20T13:23:20.396109+00:00",
+    "direction": "client → server",
+    "client": "SecureVault-Client",
+    "original_message": "hello",
+    "before_decryption": {
+      "ciphertext_hex": "9da6bf1e8aba6bd6802bb330b2bea050",
+      "integrity_tag": "8b6899c37377e9fd1e6fa8a400c083b9"
+    },
+    "after_decryption": {
+      "recovered_message": "hello"
+    }
+  }
+]

@@ -127,7 +127,7 @@ _G = (_GX, _GY)
 def _md5_hmac(key: bytes, msg: bytes) -> bytes:
     """
     HMAC built on the project's internal MD5 implementation.
-    Uses the standard HMAC construction:
+    Uses the standard HMAC constructioan:
       HMAC(K, m) = MD5((K' ⊕ opad) || MD5((K' ⊕ ipad) || m))
     where K' is K zero-padded (or hashed) to 64 bytes (MD5 block size).
     """

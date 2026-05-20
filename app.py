@@ -1,12 +1,30 @@
 """
 SecureVault — Flask Web Simulation Backend
 """
-import sys, os, traceback
+import sys, os, traceback, json
+from datetime import datetime, timezone
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify
 
 app = Flask(__name__)
+
+LOG_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'messages_log.json')
+
+
+def _append_log(entry: dict) -> None:
+    """Append *entry* to the JSON log file (creates it if absent)."""
+    if os.path.exists(LOG_FILE):
+        with open(LOG_FILE, 'r', encoding='utf-8') as fh:
+            try:
+                records = json.load(fh)
+            except json.JSONDecodeError:
+                records = []
+    else:
+        records = []
+    records.append(entry)
+    with open(LOG_FILE, 'w', encoding='utf-8') as fh:
+        json.dump(records, fh, indent=2, ensure_ascii=False)
 
 
 @app.route('/')
@@ -161,6 +179,32 @@ def simulate():
             'tampered_tag':   tampered_tag,
             'detected':       tampered_tag != packet['integrity'],
         }
+
+        # ── Persist to JSON log ──────────────────────────────────────────
+        log_entry = {
+            'timestamp':        datetime.now(timezone.utc).isoformat(),
+            'original_message': message_text,
+            'encryption': {
+                'twofish_ciphertext':  result['phase3']['twofish_ct'],
+                'rc4_ciphertext':      result['phase3']['rc4_ct'],
+                'full_ciphertext_hex': result['phase3']['full_ciphertext'],
+                'integrity_tag':       result['phase3']['integrity_tag'],
+                'elgamal_c1':          result['phase3']['elgamal_c1'],
+                'elgamal_c2':          result['phase3']['elgamal_c2'],
+            },
+            'before_decryption': {
+                'received_ciphertext_hex': packet['ciphertext'],
+                'received_integrity_tag':  packet['integrity'],
+                'integrity_verified':      result['phase4']['integrity_check'],
+            },
+            'after_decryption': {
+                'recovered_message':  result['phase5']['recovered_message'],
+                'recovered_bytes':    result['phase5']['recovered_bytes'],
+                'match_original':     result['phase5']['match'],
+            },
+            'tamper_detected':  result['phase6']['detected'],
+        }
+        _append_log(log_entry)
 
         return jsonify({'success': True, 'data': result})
 

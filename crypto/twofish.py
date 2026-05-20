@@ -93,7 +93,7 @@ class SimplifiedTwofish:
     Simplified Twofish — 128-bit blocks, variable key length.
     Uses 8 rounds (full spec uses 16) for readability.
     """
-    ROUNDS = 8
+    ROUNDS = 16
     BLOCK_BYTES = 16  # 128-bit blocks
 
     def __init__(self, key: bytes):

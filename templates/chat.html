@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SecureVault — Live Secure Chat</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07091a;--bg2:#0d1130;--bg3:#111840;
+  --srv:#1a6cf7;--srv-dim:#0d3a8a;--srv-glow:rgba(26,108,247,.25);
+  --cli:#00c97a;--cli-dim:#006640;--cli-glow:rgba(0,201,122,.22);
+  --ca:#f5a623;--ca-dim:#7a4e00;--ca-glow:rgba(245,166,35,.22);
+  --text:#e8eaf6;--muted:#7986cb;--mono:#4fc3f7;
+  --card:rgba(255,255,255,.04);--border:rgba(255,255,255,.08);
+  --radius:14px;--gap:16px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(26,108,247,.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 80% 80%,rgba(0,201,122,.10) 0%,transparent 60%);pointer-events:none;}
+
+/* ── Header ── */
+header{padding:24px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(7,9,26,.7);backdrop-filter:blur(16px);position:sticky;top:0;z-index:100;}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--srv),var(--cli));display:grid;place-items:center;font-size:20px;}
+.logo h1{font-size:20px;font-weight:700;background:linear-gradient(90deg,var(--srv),var(--cli));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo p{font-size:11px;color:var(--muted);margin-top:2px;}
+.badges{display:flex;gap:8px;flex-wrap:wrap;}
+.badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;letter-spacing:.5px;border:1px solid;}
+.badge-srv{color:var(--srv);border-color:var(--srv-dim);background:var(--srv-glow);}
+.badge-cli{color:var(--cli);border-color:var(--cli-dim);background:var(--cli-glow);}
+.badge-ca{color:var(--ca);border-color:var(--ca-dim);background:var(--ca-glow);}
+
+/* ── Init section ── */
+#init-section{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 90px);gap:32px;padding:32px;}
+.init-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px 56px;text-align:center;max-width:600px;backdrop-filter:blur(12px);}
+.init-card h2{font-size:28px;font-weight:800;margin-bottom:12px;background:linear-gradient(135deg,var(--srv),var(--cli));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.init-card p{color:var(--muted);font-size:14px;line-height:1.7;margin-bottom:32px;}
+.algo-pills{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:32px;}
+.btn-init{padding:16px 48px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--srv),#4facfe);color:#fff;transition:all .3s;letter-spacing:.3px;position:relative;overflow:hidden;}
+.btn-init:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(26,108,247,.45);}
+.btn-init:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.spinner{display:inline-block;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Main layout ── */
+#session-section{display:none;flex-direction:column;gap:var(--gap);padding:24px 32px;}
+
+/* ── Flow diagram ── */
+.flow-row{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:start;}
+.flow-arrow{display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:24px;gap:8px;}
+.arrow-line{height:2px;width:80px;background:linear-gradient(90deg,var(--srv),var(--cli));}
+.arrow-label{font-size:10px;color:var(--muted);text-align:center;font-family:'JetBrains Mono',monospace;}
+
+/* ── Cards ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;backdrop-filter:blur(8px);}
+.card-srv{border-color:rgba(26,108,247,.3);box-shadow:0 0 20px var(--srv-glow);}
+.card-cli{border-color:rgba(0,201,122,.3);box-shadow:0 0 20px var(--cli-glow);}
+.card-ca{border-color:rgba(245,166,35,.3);box-shadow:0 0 20px var(--ca-glow);}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.card-icon{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;font-size:16px;}
+.icon-srv{background:var(--srv-glow);}
+.icon-cli{background:var(--cli-glow);}
+.icon-ca{background:var(--ca-glow);}
+.card-title{font-weight:700;font-size:14px;}
+.card-title span{font-size:11px;color:var(--muted);font-weight:400;margin-left:6px;}
+.kv{display:flex;flex-direction:column;gap:8px;}
+.kv-row{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.kv-label{font-size:11px;color:var(--muted);white-space:nowrap;min-width:90px;padding-top:1px;}
+.kv-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mono);word-break:break-all;text-align:right;}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
+.dot-ok{background:#00e676;box-shadow:0 0 6px #00e676;}
+.dot-warn{background:#ffd740;}
+.dot-off{background:#546e7a;}
+.status-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.ok-badge{background:rgba(0,230,118,.15);color:#00e676;border:1px solid rgba(0,230,118,.3);}
+.fail-badge{background:rgba(244,67,54,.15);color:#ef5350;border:1px solid rgba(244,67,54,.3);}
+
+/* ── Chat panels ── */
+.chat-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);}
+.chat-panel{display:flex;flex-direction:column;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);}
+.chat-panel-srv{border-color:rgba(26,108,247,.35);}
+.chat-panel-cli{border-color:rgba(0,201,122,.35);}
+.panel-header{padding:14px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.panel-header-srv{background:linear-gradient(90deg,rgba(26,108,247,.18),transparent);}
+.panel-header-cli{background:linear-gradient(90deg,rgba(0,201,122,.15),transparent);}
+.panel-title{font-weight:700;font-size:14px;}
+.panel-dot{width:10px;height:10px;border-radius:50%;animation:pulse 2s infinite;}
+.dot-srv{background:var(--srv);box-shadow:0 0 8px var(--srv);}
+.dot-cli{background:var(--cli);box-shadow:0 0 8px var(--cli);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.5;}}
+.messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;min-height:300px;max-height:380px;scroll-behavior:smooth;}
+.msg{max-width:90%;border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.5;animation:fadeUp .3s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+.msg-out{align-self:flex-end;background:linear-gradient(135deg,rgba(0,201,122,.22),rgba(0,201,122,.12));border:1px solid rgba(0,201,122,.3);color:#b2ffda;}
+.msg-in {align-self:flex-start;background:linear-gradient(135deg,rgba(26,108,247,.22),rgba(26,108,247,.12));border:1px solid rgba(26,108,247,.3);color:#bbdefb;}
+.msg-sys{align-self:center;background:rgba(255,255,255,.05);border:1px dashed var(--border);color:var(--muted);font-size:11px;text-align:center;font-family:'JetBrains Mono',monospace;}
+.msg-label{font-size:10px;opacity:.6;margin-bottom:4px;font-weight:600;letter-spacing:.5px;}
+.msg-crypto{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.6;}
+.msg-crypto span{color:var(--mono);}
+.msg-time{font-size:10px;opacity:.45;margin-top:4px;text-align:right;}
+.chat-input{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--border);background:rgba(0,0,0,.25);}
+.chat-input input{flex:1;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:10px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+.chat-input input:focus{border-color:var(--cli);}
+.chat-input input::placeholder{color:var(--muted);}
+.btn-send{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(135deg,var(--cli),#00b09b);color:#fff;font-weight:700;font-size:13px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.btn-send:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--cli-glow);}
+.btn-send:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--muted);font-size:13px;gap:8px;}
+.empty-icon{font-size:32px;opacity:.4;}
+
+/* ── Session info row ── */
+.session-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap);}
+.section-label{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;}
+.key-box{background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;padding:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--mono);word-break:break-all;line-height:1.6;}
+hr.divider{border:none;border-top:1px solid var(--border);margin:4px 0;}
+.match-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:8px;font-size:10px;font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🔐</div>
+    <div>
+      <h1>SecureVault Live Chat</h1>
+      <p>Certificate Authority · ECDH P-256 · Twofish · RC4 · ElGamal · MD5</p>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge badge-ca">CA Signed</span>
+    <span class="badge badge-srv">Server</span>
+    <span class="badge badge-cli">Client</span>
+  </div>
+</header>
+
+<!-- ── Init section ── -->
+<div id="init-section">
+  <div class="init-card">
+    <h2>🔐 Secure Channel Setup</h2>
+    <p>Click <strong>Initialize</strong> to generate the Certificate Authority, exchange signed certificates, and derive ECDH P-256 session keys. All cryptography is implemented from scratch — no libraries.</p>
+    <div class="algo-pills">
+      <span class="badge badge-ca">CA (ElGamal Sig)</span>
+      <span class="badge badge-srv">ECDH P-256</span>
+      <span class="badge badge-srv">Twofish</span>
+      <span class="badge badge-cli">RC4</span>
+      <span class="badge badge-cli">MD5 Integrity</span>
+      <span class="badge badge-ca">HKDF-MD5 KDF</span>
+    </div>
+    <button class="btn-init" id="btn-init" onclick="initialize()">🚀 Initialize Secure Connection</button>
+    <p id="init-status" style="margin-top:16px;font-size:12px;color:var(--muted);min-height:18px;"></p>
+  </div>
+</div>
+
+<!-- ── Session section (shown after init) ── -->
+<div id="session-section">
+
+  <!-- CA + Certs info row -->
+  <div class="flow-row" id="info-row">
+    <!-- Server card -->
+    <div class="card card-srv" id="srv-card">
+      <div class="card-header">
+        <div class="card-icon icon-srv">🖥️</div>
+        <div class="card-title">Server <span>SecureVault-Server</span></div>
+        <span class="status-badge ok-badge" id="srv-cert-badge">✓ CERT VALID</span>
+      </div>
+      <div class="kv" id="srv-kv"></div>
+    </div>
+
+    <!-- CA middle -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:8px;">
+      <div class="card card-ca" style="min-width:220px;">
+        <div class="card-header">
+          <div class="card-icon icon-ca">🏛️</div>
+          <div class="card-title">Certificate Authority</div>
+        </div>
+        <div class="kv" id="ca-kv"></div>
+      </div>
+      <div style="font-size:10px;color:var(--muted);text-align:center;line-height:1.6;">
+        ← signs certs →<br/>
+        <span style="color:var(--ca);font-family:'JetBrains Mono',monospace;font-size:9px;">ElGamal Digital Signature<br/>g^H ≡ y^r · r^s (mod p)</span>
+      </div>
+    </div>
+
+    <!-- Client card -->
+    <div class="card card-cli" id="cli-card">
+      <div class="card-header">
+        <div class="card-icon icon-cli">💻</div>
+        <div class="card-title">Client <span>SecureVault-Client</span></div>
+        <span class="status-badge ok-badge" id="cli-cert-badge">✓ CERT VALID</span>
+      </div>
+      <div class="kv" id="cli-kv"></div>
+    </div>
+  </div>
+
+  <!-- Session keys row -->
+  <div class="session-row">
+    <div class="card">
+      <div class="section-label">🔑 ECDH Shared Secret</div>
+      <div class="key-box" id="shared-x">—</div>
+    </div>
+    <div class="card">
+      <div class="section-label">🛡️ Twofish Session Key (128-bit)</div>
+      <div class="key-box" id="tf-key">—</div>
+    </div>
+    <div class="card">
+      <div class="section-label">⚡ RC4 Session Key (128-bit)</div>
+      <div class="key-box" id="rc4-key">—</div>
+    </div>
+  </div>
+
+  <!-- Chat panels -->
+  <div class="chat-grid">
+    <!-- Server panel -->
+    <div class="chat-panel chat-panel-srv">
+      <div class="panel-header panel-header-srv">
+        <div class="panel-dot dot-srv"></div>
+        <span class="panel-title">🖥️ Server — Received Messages</span>
+      </div>
+      <div class="messages" id="srv-messages">
+        <div class="empty-state"><span class="empty-icon">🔒</span>Waiting for encrypted messages…</div>
+      </div>
+    </div>
+
+    <!-- Client panel -->
+    <div class="chat-panel chat-panel-cli">
+      <div class="panel-header panel-header-cli">
+        <div class="panel-dot dot-cli"></div>
+        <span class="panel-title">💻 Client — Send Encrypted Message</span>
+      </div>
+      <div class="messages" id="cli-messages">
+        <div class="empty-state"><span class="empty-icon">✉️</span>Type a message below to send</div>
+      </div>
+      <div class="chat-input">
+        <input type="text" id="msg-input" placeholder="Type a secure message…" onkeydown="if(event.key==='Enter')sendMsg()"/>
+        <button class="btn-send" id="btn-send" onclick="sendMsg()">Send 🔐</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end session-section -->
+
+<script>
+const $ = id => document.getElementById(id);
+
+// ── Initialize ────────────────────────────────────────────────────────────────
+async function initialize() {
+  const btn = $('btn-init');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating keys & certificates…';
+  $('init-status').textContent = 'This takes ~10 seconds (ElGamal prime generation)…';
+
+  try {
+    const res  = await fetch('/api/initialize', {method:'POST'});
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error || 'Init failed');
+    showSession(json.data);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Initialize Secure Connection';
+    $('init-status').textContent = 'Error: ' + e.message;
+  }
+}
+
+function kv(label, val) {
+  return `<div class="kv-row"><span class="kv-label">${label}</span><span class="kv-val">${val}</span></div>`;
+}
+
+function showSession(d) {
+  // CA
+  $('ca-kv').innerHTML = kv('Prime p', d.ca.p) + kv('Generator g', d.ca.g) + kv('Public y', d.ca.y);
+
+  // Server
+  $('srv-kv').innerHTML = [
+    kv('Subject', d.server.subject),
+    kv('ElGamal y', d.server.eg_y),
+    kv('ECDH Pub x', d.server.ecdh_x),
+    kv('Issued at', d.server.issued_at.slice(0,19).replace('T',' ')),
+    kv('Sig r', d.server.sig_r),
+    kv('Sig s', d.server.sig_s),
+  ].join('');
+  $('srv-cert-badge').className = d.server.cert_valid ? 'status-badge ok-badge' : 'status-badge fail-badge';
+  $('srv-cert-badge').textContent = d.server.cert_valid ? '✓ CERT VALID' : '✗ INVALID';
+
+  // Client
+  $('cli-kv').innerHTML = [
+    kv('Subject', d.client.subject),
+    kv('ElGamal y', d.client.eg_y),
+    kv('ECDH Pub x', d.client.ecdh_x),
+    kv('Issued at', d.client.issued_at.slice(0,19).replace('T',' ')),
+    kv('Sig r', d.client.sig_r),
+    kv('Sig s', d.client.sig_s),
+  ].join('');
+
+  // Session keys
+  $('shared-x').textContent = d.session.shared_x;
+  $('tf-key').textContent   = d.session.twofish_key;
+  $('rc4-key').textContent  = d.session.rc4_key;
+
+  // Show session section
+  $('init-section').style.display  = 'none';
+  $('session-section').style.display = 'flex';
+  $('session-section').style.flexDirection = 'column';
+  $('session-section').style.gap = '16px';
+
+  // System messages
+  addSrvMsg('sys', '🏛️ CA certificate verified ✓');
+  addSrvMsg('sys', '🔑 ECDH key exchange complete ✓');
+  addSrvMsg('sys', '🛡️ Session keys derived — ready to receive');
+  addCliMsg('sys', '🏛️ CA certificate verified ✓');
+  addCliMsg('sys', '🔑 ECDH key exchange complete ✓');
+  addCliMsg('sys', '✉️ Ready — type a message below');
+
+  $('msg-input').focus();
+}
+
+// ── Send message ──────────────────────────────────────────────────────────────
+async function sendMsg() {
+  const input = $('msg-input');
+  const text  = input.value.trim();
+  if (!text) return;
+
+  const btn = $('btn-send');
+  btn.disabled = true;
+  input.disabled = true;
+
+  try {
+    const res  = await fetch('/api/send', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({message: text})
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error);
+    const d = json.data;
+
+    // Client panel — sent message
+    addCliMsg('out', text,
+      `Twofish CT: <span>${d.client.twofish_ct}</span><br>` +
+      `RC4 CT: <span>${d.client.rc4_ct}</span><br>` +
+      `MD5 Tag: <span>${d.client.integrity}</span><br>` +
+      `ElGamal c1: <span>${d.client.eg_c1}</span><br>` +
+      `ElGamal c2: <span>${d.client.eg_c2}</span>`
+    );
+
+    // Client panel — ACK from server
+    addCliMsg('in', '🖥️ ' + d.server.ack_text,
+      `ACK cipher: <span>${d.server.ack_ct}</span>`
+    );
+
+    // Server panel — received + decrypted
+    addSrvMsg('in', '💻 ' + d.server.decrypted,
+      `RC4 CT: <span>${d.client.rc4_ct}</span><br>` +
+      `MD5 Check: <span style="color:#00e676">✓ PASSED</span><br>` +
+      `ElGamal unwrap: <span style="color:#00e676">✓ OK</span><br>` +
+      `Decrypted: <span style="color:#b2ffda">${d.server.decrypted}</span>`
+    );
+
+    input.value = '';
+  } catch(e) {
+    addCliMsg('sys', '⚠️ Error: ' + e.message);
+  } finally {
+    btn.disabled  = false;
+    input.disabled = false;
+    input.focus();
+  }
+}
+
+// ── Message helpers ───────────────────────────────────────────────────────────
+function addSrvMsg(type, text, crypto='') {
+  const box = $('srv-messages');
+  const empty = box.querySelector('.empty-state');
+  if (empty) empty.remove();
+  box.appendChild(buildMsg(type, text, crypto, 'srv'));
+  box.scrollTop = box.scrollHeight;
+}
+function addCliMsg(type, text, crypto='') {
+  const box = $('cli-messages');
+  const empty = box.querySelector('.empty-state');
+  if (empty) empty.remove();
+  box.appendChild(buildMsg(type, text, crypto, 'cli'));
+  box.scrollTop = box.scrollHeight;
+}
+function buildMsg(type, text, crypto, side) {
+  const div = document.createElement('div');
+  const now = new Date().toLocaleTimeString();
+  if (type === 'sys') {
+    div.className = 'msg msg-sys';
+    div.textContent = text;
+  } else {
+    div.className = 'msg ' + (type === 'out' ? 'msg-out' : 'msg-in');
+    div.innerHTML  = `<div class="msg-label">${type==='out'?'CLIENT → SERVER':'SERVER → CLIENT'}</div>
+      ${escHtml(text)}
+      ${crypto ? `<div class="msg-crypto">${crypto}</div>` : ''}
+      <div class="msg-time">${now}</div>`;
+  }
+  return div;
+}
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>

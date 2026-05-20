@@ -17,12 +17,15 @@ A full cryptographic communication system built **from scratch**.
 
 | Algorithm | Type | Role |
 |---|---|---|
+| CA (ElGamal Sig) | PKI / Signature | Root Certificate Authority, issues & verifies identity certificates |
 | ECDH (P-256) | Asymmetric | Session key exchange |
 | HKDF-MD5 (KDF) | Key Derivation | Derive symmetric keys from shared secret |
 | Twofish | Symmetric (Block) | Inner encryption layer |
 | RC4 | Symmetric (Stream) | Outer encryption layer |
 | ElGamal | Asymmetric | Key wrapping / transport |
 | MD5 | Hash | Message integrity verification |
+
+*(Note: Zero external cryptographic libraries are used. All math and logic is implemented purely from scratch.)*
 
 ---
 
@@ -36,26 +39,48 @@ Install Flask (only needed once):
 pip3 install flask --break-system-packages
 ```
 
-### Option 1 — Web Simulation (Recommended)
+### Option 1 — Live Chat Web GUI (New!)
 
-Launches an interactive browser-based simulation of the full cryptographic pipeline.
+Launches a beautiful split-screen browser chat that simulates the client, server, and CA all at once.
+
+```bash
+cd crypto-project
+python3 chat_app.py
+```
+
+Then open your browser and go to: `http://localhost:5001`
+- Click "Initialize" to generate keys and exchange certificates.
+- Type a message on the Client side and watch the Server decrypt it.
+
+### Option 2 — True Client-Server over TCP (New!)
+
+Runs a real network simulation over raw TCP sockets on port 6000. 
+
+**Terminal 1 (Start Server):**
+```bash
+cd crypto-project
+python3 server.py
+```
+*(Wait until it says it's listening)*
+
+**Terminal 2 (Start Client):**
+```bash
+cd crypto-project
+python3 client.py
+```
+Type messages in the Client terminal and see them securely arrive at the Server.
+
+### Option 3 — Original Web Simulation
+
+Launches the interactive browser-based simulation of the 7-phase cryptographic pipeline.
 
 ```bash
 cd crypto-project
 python3 app.py
 ```
+Go to `http://localhost:5000`, type a message, and click **"Run Full Simulation"** to watch the phases animate step by step.
 
-Then open your browser and go to:
-
-```
-http://localhost:5000
-```
-
-Type a message, click **"Run Full Simulation"**, and watch all 7 phases animate step by step.
-
----
-
-### Option 2 — Terminal Simulation
+### Option 4 — Original Terminal Simulation
 
 Runs the full Alice → Bob simulation in the terminal with colored output.
 
@@ -66,45 +91,37 @@ python3 simulate.py
 
 ---
 
-### Option 3 — Quick Pipeline Test
-
-Runs a minimal self-test of the encrypt/decrypt pipeline and exits.
-
-```bash
-cd crypto-project
-python3 securevault.py
-```
-
----
-
 ## 📁 Project Structure
 
-```
+```text
 crypto-project/
-├── app.py              # Flask web server
-├── simulate.py         # Terminal simulation (colored, 7 phases)
-├── securevault.py      # Core pipeline demo / self-test
+├── crypto/
+│   ├── ca.py             # Certificate Authority (ElGamal Digital Signatures)
+│   ├── rc4.py            # RC4 stream cipher 
+│   ├── twofish.py        # Twofish block cipher 
+│   ├── elgamal.py        # ElGamal asymmetric cipher 
+│   ├── ecdh_kdf.py       # ECDH P-256 + HKDF-MD5 
+│   ├── md5.py            # MD5 hash 
+│   └── diffie_hellman.py # Classic Diffie-Hellman
+├── server.py             # Live TCP server
+├── client.py             # Live TCP client
+├── chat_app.py           # Live Web GUI Chat (port 5001)
+├── app.py                # Web Simulation (port 5000)
+├── simulate.py           # Terminal Simulation
+├── securevault.py        # Minimal core pipeline demo 
 ├── templates/
-│   └── index.html      # Web UI
-└── crypto/
-    ├── rc4.py          # RC4 stream cipher (from scratch)
-    ├── twofish.py      # Twofish block cipher (from scratch)
-    ├── elgamal.py      # ElGamal asymmetric cipher (from scratch)
-    ├── ecdh_kdf.py     # ECDH P-256 + HKDF-MD5 (from scratch)
-    └── md5.py          # MD5 hash (from scratch)
+│   ├── chat.html         # Web Chat UI
+│   └── index.html        # Web Simulation UI
+├── ca_root.json          # Auto-generated CA root key state
+└── messages_log.json     # Persistent log of all messages and their ciphertexts
 ```
 
 ---
 
-## 🔄 Simulation Phases
+## 📜 Message Logging
 
-| Phase | Description |
-|---|---|
-| 0 | Setup — ElGamal key generation |
-| 1 | Alice composes her message |
-| 2 | ECDH P-256 key exchange + KDF |
-| 3 | Double-layer encryption (Twofish → RC4 → MD5 → ElGamal wrap) |
-| 4 | Decryption (Bob reverses all layers) |
-| 5 | Bob reads the recovered message |
-| 6 | Tamper attack — Eve modifies ciphertext, Bob detects it |
-| 7 | Summary of all algorithm results |
+Every time a message is encrypted and sent (either via the web interfaces or the TCP client-server), a full record is automatically saved to `messages_log.json`. This log includes:
+- The original plaintext message.
+- The state **before decryption** (raw ciphertext, integrity tag).
+- The state **after decryption** (recovered message).
+- Whether an integrity/tamper attack was detected.
